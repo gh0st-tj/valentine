@@ -676,6 +676,7 @@ let gameSeconds  = 0;
 let timerInterval = null;
 
 const cardEmojis = ['💙', '🌹', '🦋', '💌', '✨', '💎', '🌙', '💐'];
+const mismatchRecoveryMs = 320;
 
 const streakMessages = [
     '', '',
@@ -831,17 +832,15 @@ function checkMatch() {
         document.getElementById('streak-message').textContent = '';
         clearComboBadge();
 
-        setTimeout(() => {
-            c1.classList.add('mismatch');
-            c2.classList.add('mismatch');
+        c1.classList.add('mismatch');
+        c2.classList.add('mismatch');
 
-            setTimeout(() => {
-                c1.classList.remove('flipped', 'mismatch');
-                c2.classList.remove('flipped', 'mismatch');
-                flippedCards = [];
-                canFlip = true;
-            }, 500);
-        }, 600);
+        setTimeout(() => {
+            c1.classList.remove('flipped', 'mismatch');
+            c2.classList.remove('flipped', 'mismatch');
+            flippedCards = [];
+            canFlip = true;
+        }, mismatchRecoveryMs);
     }
 }
 
