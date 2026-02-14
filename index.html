@@ -50,6 +50,7 @@
                 <div class="flower" id="flower"></div>
             </div>
             <h2 class="valentine-message">Happy Valentine's Day, Maya! 💙</h2>
+            <p class="celebrate-subtitle">I made a little game for you...</p>
             <button class="game-btn" id="game-btn" onclick="startGame()">Play a Game! 🎮</button>
         </div>
         <div class="floating-hearts" id="floating-hearts"></div>
@@ -64,11 +65,32 @@
                 <div class="game-stats">
                     <div class="stat">Moves: <span id="game-moves">0</span></div>
                     <div class="stat">Pairs: <span id="game-pairs">0</span>/8</div>
+                    <div class="stat">⏱ <span id="game-timer">0:00</span></div>
                 </div>
             </div>
             <div class="game-area" id="game-area"></div>
             <div class="game-message" id="game-message">Find all the matching pairs!</div>
+            <div class="streak-message" id="streak-message"></div>
             <button class="game-back-btn" onclick="backToCelebration()">Back 💙</button>
+        </div>
+        <!-- Win Overlay -->
+        <div class="game-win-overlay" id="game-win-overlay">
+            <div class="win-content">
+                <div class="win-emoji">🎉</div>
+                <h2 class="win-title">You did it, Maya!</h2>
+                <p class="win-stats" id="win-stats"></p>
+                <div class="win-love-note">
+                    You found every match &mdash; just like how<br>
+                    we found each other.<br>
+                    You make every day brighter and more beautiful.<br>
+                    I'm the luckiest person in the world. 💙<br><br>
+                    <span class="win-signature">Forever yours ✨</span>
+                </div>
+                <div class="win-buttons">
+                    <button class="game-btn win-btn" onclick="startGame()">Play Again 🎮</button>
+                    <button class="game-back-btn" onclick="backToCelebration()">Back 💙</button>
+                </div>
+            </div>
         </div>
     </section>
 

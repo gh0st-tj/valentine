@@ -436,76 +436,127 @@ function spawnFloatingHearts() {
 // ========================================
 //  SCENE 4 — MEMORY GAME
 // ========================================
-let gameMoves = 0;
-let gamePairs = 0;
-let flippedCards = [];
+let gameMoves    = 0;
 let matchedPairs = 0;
-let canFlip = true;
+let flippedCards = [];
+let canFlip      = false;
+let streak       = 0;
+let gameStarted  = false;
+let gameSeconds  = 0;
+let timerInterval = null;
 
-const cardEmojis = ['💙', '🌸', '🌺', '🦋', '✨', '💎', '🌹', '💫'];
+const cardEmojis = ['💙', '🌹', '🦋', '💌', '✨', '💎', '🌙', '💐'];
 
+const streakMessages = [
+    '', '',
+    'Nice match! 🔥',
+    'On fire! 🔥🔥',
+    'Unstoppable! 🔥🔥🔥',
+    'INCREDIBLE! 🔥🔥🔥🔥',
+    'LEGENDARY!! ✨🔥✨'
+];
+
+// ── Start / Reset ──
 function startGame() {
     showScene('scene-game');
-    gameMoves = 0;
-    gamePairs = 0;
-    matchedPairs = 0;
-    flippedCards = [];
-    canFlip = true;
-    
-    document.getElementById('game-moves').textContent = '0';
-    document.getElementById('game-pairs').textContent = '0';
-    document.getElementById('game-message').textContent = 'Find all the matching pairs!';
-    
+    resetGame();
     createMemoryCards();
+    // Brief preview: show all cards face-up, then flip back
+    setTimeout(previewCards, 500);
 }
 
+function resetGame() {
+    gameMoves    = 0;
+    matchedPairs = 0;
+    flippedCards  = [];
+    canFlip      = false;
+    streak       = 0;
+    gameStarted  = false;
+    gameSeconds  = 0;
+
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+
+    document.getElementById('game-moves').textContent  = '0';
+    document.getElementById('game-pairs').textContent  = '0';
+    document.getElementById('game-timer').textContent   = '0:00';
+    document.getElementById('game-message').textContent = 'Memorize the cards...';
+    document.getElementById('streak-message').textContent = '';
+
+    const overlay = document.getElementById('game-win-overlay');
+    if (overlay) overlay.classList.remove('visible');
+}
+
+// ── Build Cards ──
 function createMemoryCards() {
     const area = document.getElementById('game-area');
     area.innerHTML = '';
-    
-    // Create pairs and shuffle
-    const cards = [...cardEmojis, ...cardEmojis];
-    shuffleArray(cards);
-    
-    cards.forEach((emoji, index) => {
+
+    const deck = [...cardEmojis, ...cardEmojis];
+    shuffleArray(deck);
+
+    deck.forEach((emoji, i) => {
         const card = document.createElement('div');
         card.className = 'memory-card';
         card.dataset.emoji = emoji;
-        card.dataset.index = index;
-        
+        card.style.setProperty('--entry-delay', (i * 0.04) + 's');
+
         const front = document.createElement('div');
         front.className = 'card-front';
-        front.textContent = '💙';
-        
+        front.innerHTML = '<span class="card-front-icon">?</span>';
+
         const back = document.createElement('div');
         back.className = 'card-back';
         back.textContent = emoji;
-        
+
         card.appendChild(front);
         card.appendChild(back);
-        
         card.addEventListener('click', () => flipCard(card));
-        
         area.appendChild(card);
     });
 }
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
+// ── Preview ──
+function previewCards() {
+    const cards = document.querySelectorAll('.memory-card');
+    // Wait for entry animation to finish, then flip all face-up
+    const entryTime = cards.length * 40 + 400;
+
+    setTimeout(() => {
+        cards.forEach(c => c.classList.add('flipped'));
+
+        // After 2 seconds, flip back and enable play
+        setTimeout(() => {
+            cards.forEach(c => c.classList.remove('flipped'));
+            canFlip = true;
+            document.getElementById('game-message').textContent = 'Find all the matching pairs!';
+        }, 2000);
+    }, entryTime);
 }
 
+// ── Timer ──
+function startTimer() {
+    if (gameStarted) return;
+    gameStarted = true;
+    timerInterval = setInterval(() => {
+        gameSeconds++;
+        const m = Math.floor(gameSeconds / 60);
+        const s = gameSeconds % 60;
+        document.getElementById('game-timer').textContent =
+            `${m}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// ── Card Interaction ──
 function flipCard(card) {
     if (!canFlip) return;
-    if (card.classList.contains('flipped')) return;
-    if (card.classList.contains('matched')) return;
+    if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
     if (flippedCards.length >= 2) return;
-    
+
+    startTimer();
+
     card.classList.add('flipped');
     flippedCards.push(card);
-    
+
     if (flippedCards.length === 2) {
         gameMoves++;
         document.getElementById('game-moves').textContent = gameMoves;
@@ -515,72 +566,94 @@ function flipCard(card) {
 
 function checkMatch() {
     canFlip = false;
-    const [card1, card2] = flippedCards;
-    
-    if (card1.dataset.emoji === card2.dataset.emoji) {
-        // Match found!
+    const [c1, c2] = flippedCards;
+
+    if (c1.dataset.emoji === c2.dataset.emoji) {
+        // ── MATCH ──
+        streak++;
         setTimeout(() => {
-            card1.classList.add('matched');
-            card2.classList.add('matched');
-            
+            c1.classList.add('matched');
+            c2.classList.add('matched');
+
             matchedPairs++;
-            gamePairs = matchedPairs;
             document.getElementById('game-pairs').textContent = matchedPairs;
-            
-            // Sparkle effect
-            const rect1 = card1.getBoundingClientRect();
-            const rect2 = card2.getBoundingClientRect();
-            addSparkles(rect1.left + rect1.width / 2, rect1.top + rect1.height / 2);
-            addSparkles(rect2.left + rect2.width / 2, rect2.top + rect2.height / 2);
-            
+
+            // Sparkles on both cards
+            const r1 = c1.getBoundingClientRect();
+            const r2 = c2.getBoundingClientRect();
+            addSparkles(r1.left + r1.width / 2, r1.top + r1.height / 2);
+            addSparkles(r2.left + r2.width / 2, r2.top + r2.height / 2);
+
+            showStreakMessage();
+
             flippedCards = [];
             canFlip = true;
-            
-            // Check if game is complete
-            if (matchedPairs === 8) {
-                endGame();
-            }
-        }, 500);
+
+            if (matchedPairs === 8) endGame();
+        }, 400);
     } else {
-        // No match
+        // ── MISMATCH ──
+        streak = 0;
+        document.getElementById('streak-message').textContent = '';
+
         setTimeout(() => {
-            card1.classList.remove('flipped');
-            card2.classList.remove('flipped');
-            flippedCards = [];
-            canFlip = true;
-        }, 1000);
+            c1.classList.add('mismatch');
+            c2.classList.add('mismatch');
+
+            setTimeout(() => {
+                c1.classList.remove('flipped', 'mismatch');
+                c2.classList.remove('flipped', 'mismatch');
+                flippedCards = [];
+                canFlip = true;
+            }, 500);
+        }, 600);
     }
 }
 
-function endGame() {
-    const msg = document.getElementById('game-message');
-    
-    if (gameMoves <= 12) {
-        msg.innerHTML = `🎉 Perfect! You won in ${gameMoves} moves! 🎉<br>You have an amazing memory! 💙`;
-    } else if (gameMoves <= 20) {
-        msg.innerHTML = `💙 Great job! You won in ${gameMoves} moves! 💙<br>You're pretty awesome!`;
+// ── Streak ──
+function showStreakMessage() {
+    const el  = document.getElementById('streak-message');
+    const idx = Math.min(streak, streakMessages.length - 1);
+    const msg = streakMessages[idx];
+
+    if (msg) {
+        el.textContent = msg;
+        el.classList.remove('pop');
+        void el.offsetWidth;          // force reflow for re-trigger
+        el.classList.add('pop');
     } else {
-        msg.innerHTML = `😊 You won in ${gameMoves} moves!<br>Want to try again? 💙`;
+        el.textContent = '';
     }
-    
-    // Add play again button
-    setTimeout(() => {
-        const playAgainBtn = document.createElement('button');
-        playAgainBtn.className = 'game-btn';
-        playAgainBtn.textContent = 'Play Again! 🎮';
-        playAgainBtn.style.opacity = '1';
-        playAgainBtn.style.animation = 'none';
-        playAgainBtn.style.marginTop = '15px';
-        playAgainBtn.onclick = startGame;
-        
-        const msgEl = document.getElementById('game-message');
-        if (!msgEl.querySelector('.game-btn')) {
-            msgEl.appendChild(playAgainBtn);
-        }
-    }, 1000);
 }
 
+// ── End Game ──
+function endGame() {
+    if (timerInterval) clearInterval(timerInterval);
+    canFlip = false;
+
+    const m = Math.floor(gameSeconds / 60);
+    const s = gameSeconds % 60;
+    const timeStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+
+    let rating;
+    if (gameMoves <= 12)       rating = "Perfect memory! You're amazing! ✨";
+    else if (gameMoves <= 18)  rating = 'Great job, Maya! 🌟';
+    else if (gameMoves <= 25)  rating = 'Well done! 💙';
+    else                       rating = 'You never give up — I love that! 😊';
+
+    document.getElementById('win-stats').innerHTML =
+        `${gameMoves} moves &middot; ${timeStr}<br><span class="win-rating">${rating}</span>`;
+
+    // Show win overlay after a short dramatic pause
+    setTimeout(() => {
+        document.getElementById('game-win-overlay').classList.add('visible');
+    }, 800);
+}
+
+// ── Nav ──
 function backToCelebration() {
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById('game-win-overlay').classList.remove('visible');
     showScene('scene-celebrate');
 }
 
