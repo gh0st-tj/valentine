@@ -434,105 +434,153 @@ function spawnFloatingHearts() {
 }
 
 // ========================================
-//  SCENE 4 — MINI GAME
+//  SCENE 4 — MEMORY GAME
 // ========================================
-let gameScore = 0;
-let gameTime = 30;
-let gameInterval = null;
-let gameSpawnInterval = null;
-let gameActive = false;
+let gameMoves = 0;
+let gamePairs = 0;
+let flippedCards = [];
+let matchedPairs = 0;
+let canFlip = true;
+
+const cardEmojis = ['💙', '🌸', '🌺', '🦋', '✨', '💎', '🌹', '💫'];
 
 function startGame() {
     showScene('scene-game');
-    gameScore = 0;
-    gameTime = 30;
-    gameActive = true;
+    gameMoves = 0;
+    gamePairs = 0;
+    matchedPairs = 0;
+    flippedCards = [];
+    canFlip = true;
     
-    document.getElementById('game-score').textContent = '0';
-    document.getElementById('game-time').textContent = '30';
-    document.getElementById('game-message').textContent = 'Click the flowers as fast as you can!';
-    document.getElementById('game-area').innerHTML = '';
+    document.getElementById('game-moves').textContent = '0';
+    document.getElementById('game-pairs').textContent = '0';
+    document.getElementById('game-message').textContent = 'Find all the matching pairs!';
     
-    // Timer countdown
-    gameInterval = setInterval(() => {
-        gameTime--;
-        document.getElementById('game-time').textContent = gameTime;
-        
-        if (gameTime <= 0) {
-            endGame();
-        }
-    }, 1000);
-    
-    // Spawn flowers
-    spawnGameFlower();
-    gameSpawnInterval = setInterval(spawnGameFlower, 800);
+    createMemoryCards();
 }
 
-function spawnGameFlower() {
-    if (!gameActive) return;
-    
+function createMemoryCards() {
     const area = document.getElementById('game-area');
-    const flower = document.createElement('div');
-    flower.className = 'game-flower';
+    area.innerHTML = '';
     
-    const icons = ['🌸', '🌺', '🌼', '🌻', '🌷', '💐', '🏵️', '🌹'];
-    flower.textContent = icons[Math.floor(Math.random() * icons.length)];
+    // Create pairs and shuffle
+    const cards = [...cardEmojis, ...cardEmojis];
+    shuffleArray(cards);
     
-    const size = Math.random() * 30 + 40;
-    flower.style.fontSize = size + 'px';
-    flower.style.left = Math.random() * 85 + '%';
-    flower.style.top = Math.random() * 85 + '%';
-    
-    const duration = Math.random() * 1.5 + 2;
-    flower.style.animationDuration = duration + 's';
-    
-    flower.addEventListener('click', () => {
-        if (!gameActive) return;
+    cards.forEach((emoji, index) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.emoji = emoji;
+        card.dataset.index = index;
         
-        gameScore += 10;
-        document.getElementById('game-score').textContent = gameScore;
+        const front = document.createElement('div');
+        front.className = 'card-front';
+        front.textContent = '💙';
         
-        // Sparkle effect
-        const rect = flower.getBoundingClientRect();
-        addSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const back = document.createElement('div');
+        back.className = 'card-back';
+        back.textContent = emoji;
         
-        // Remove flower
-        flower.style.animation = 'flowerPop 0.3s ease-out';
-        setTimeout(() => flower.remove(), 300);
+        card.appendChild(front);
+        card.appendChild(back);
+        
+        card.addEventListener('click', () => flipCard(card));
+        
+        area.appendChild(card);
     });
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function flipCard(card) {
+    if (!canFlip) return;
+    if (card.classList.contains('flipped')) return;
+    if (card.classList.contains('matched')) return;
+    if (flippedCards.length >= 2) return;
     
-    area.appendChild(flower);
+    card.classList.add('flipped');
+    flippedCards.push(card);
     
-    // Auto-remove after animation
-    setTimeout(() => {
-        if (flower.parentNode) flower.remove();
-    }, duration * 1000);
+    if (flippedCards.length === 2) {
+        gameMoves++;
+        document.getElementById('game-moves').textContent = gameMoves;
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    canFlip = false;
+    const [card1, card2] = flippedCards;
+    
+    if (card1.dataset.emoji === card2.dataset.emoji) {
+        // Match found!
+        setTimeout(() => {
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+            
+            matchedPairs++;
+            gamePairs = matchedPairs;
+            document.getElementById('game-pairs').textContent = matchedPairs;
+            
+            // Sparkle effect
+            const rect1 = card1.getBoundingClientRect();
+            const rect2 = card2.getBoundingClientRect();
+            addSparkles(rect1.left + rect1.width / 2, rect1.top + rect1.height / 2);
+            addSparkles(rect2.left + rect2.width / 2, rect2.top + rect2.height / 2);
+            
+            flippedCards = [];
+            canFlip = true;
+            
+            // Check if game is complete
+            if (matchedPairs === 8) {
+                endGame();
+            }
+        }, 500);
+    } else {
+        // No match
+        setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+            canFlip = true;
+        }, 1000);
+    }
 }
 
 function endGame() {
-    gameActive = false;
-    clearInterval(gameInterval);
-    clearInterval(gameSpawnInterval);
-    
     const msg = document.getElementById('game-message');
-    if (gameScore >= 200) {
-        msg.innerHTML = `🎉 Amazing! You scored ${gameScore}! 🎉<br>You're as quick as my heart beats for you! 💙`;
-    } else if (gameScore >= 100) {
-        msg.innerHTML = `💙 Great job! You scored ${gameScore}! 💙<br>You're pretty awesome!`;
+    
+    if (gameMoves <= 12) {
+        msg.innerHTML = `🎉 Perfect! You won in ${gameMoves} moves! 🎉<br>You have an amazing memory! 💙`;
+    } else if (gameMoves <= 20) {
+        msg.innerHTML = `💙 Great job! You won in ${gameMoves} moves! 💙<br>You're pretty awesome!`;
     } else {
-        msg.innerHTML = `😊 You scored ${gameScore}!<br>Still love you though! 💙`;
+        msg.innerHTML = `😊 You won in ${gameMoves} moves!<br>Want to try again? 💙`;
     }
     
-    // Clear remaining flowers
+    // Add play again button
     setTimeout(() => {
-        document.getElementById('game-area').innerHTML = '';
-    }, 2000);
+        const playAgainBtn = document.createElement('button');
+        playAgainBtn.className = 'game-btn';
+        playAgainBtn.textContent = 'Play Again! 🎮';
+        playAgainBtn.style.opacity = '1';
+        playAgainBtn.style.animation = 'none';
+        playAgainBtn.style.marginTop = '15px';
+        playAgainBtn.onclick = startGame;
+        
+        const msgEl = document.getElementById('game-message');
+        if (!msgEl.querySelector('.game-btn')) {
+            msgEl.appendChild(playAgainBtn);
+        }
+    }, 1000);
 }
 
 function backToCelebration() {
-    gameActive = false;
-    if (gameInterval) clearInterval(gameInterval);
-    if (gameSpawnInterval) clearInterval(gameSpawnInterval);
     showScene('scene-celebrate');
 }
 

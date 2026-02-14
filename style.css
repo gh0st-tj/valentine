@@ -777,63 +777,80 @@ html, body {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 20px;
     border: 2px solid rgba(79, 195, 247, 0.3);
-    overflow: hidden;
+    overflow: auto;
     box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 20px;
+    align-content: center;
 }
 
-.game-flower {
-    position: absolute;
+.memory-card {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, rgba(74, 144, 217, 0.3), rgba(93, 173, 226, 0.3));
+    border: 2px solid rgba(79, 195, 247, 0.4);
+    border-radius: 15px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    transition: all 0.3s ease;
+    position: relative;
+    transform-style: preserve-3d;
     user-select: none;
-    animation: flowerAppear 0.3s ease-out, flowerFloat 3s ease-in-out infinite;
-    transition: transform 0.1s ease;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
-.game-flower:hover {
-    transform: scale(1.2) rotate(10deg);
+.memory-card:hover:not(.flipped):not(.matched) {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
 }
 
-.game-flower:active {
-    transform: scale(0.9);
+.memory-card:active:not(.flipped):not(.matched) {
+    transform: scale(0.95);
 }
 
-@keyframes flowerAppear {
-    from {
-        opacity: 0;
-        transform: scale(0) rotate(-180deg);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
+.memory-card .card-front,
+.memory-card .card-back {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    border-radius: 13px;
+    transition: transform 0.5s ease;
 }
 
-@keyframes flowerFloat {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    25% {
-        transform: translateY(-10px) rotate(5deg);
-    }
-    75% {
-        transform: translateY(-5px) rotate(-5deg);
-    }
+.memory-card .card-front {
+    background: linear-gradient(135deg, rgba(74, 144, 217, 0.5), rgba(93, 173, 226, 0.5));
+    transform: rotateY(0deg);
 }
 
-@keyframes flowerPop {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.5);
-        opacity: 0.8;
-    }
-    100% {
-        transform: scale(0);
-        opacity: 0;
-    }
+.memory-card .card-back {
+    background: linear-gradient(135deg, rgba(79, 195, 247, 0.4), rgba(126, 200, 227, 0.4));
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-front {
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-back {
+    transform: rotateY(0deg);
+}
+
+.memory-card.matched {
+    background: linear-gradient(135deg, rgba(79, 195, 247, 0.6), rgba(174, 223, 247, 0.6));
+    border-color: var(--blue-glow);
+    animation: matchPulse 0.6s ease;
+    cursor: default;
+}
+
+@keyframes matchPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(79, 195, 247, 0.8); }
 }
 
 .game-message {
@@ -895,8 +912,25 @@ html, body {
         font-size: 0.95rem;
     }
     
-    .game-flower {
-        font-size: 35px !important;
+    .game-area {
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .memory-card {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .game-area {
+        gap: 6px;
+        padding: 10px;
+    }
+    
+    .memory-card {
+        font-size: 1.5rem;
+        border-radius: 10px;
     }
 }
 
