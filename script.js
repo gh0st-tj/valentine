@@ -10,6 +10,213 @@ function showScene(id) {
 
 // ────────── Utilities ──────────
 const delay = ms => new Promise(r => setTimeout(r, ms));
+const prefersReducedMotion =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function randomItem(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+const introOpenTexts = [
+    'Open',
+    'Open The Magic',
+    'Tap For Surprise',
+    'Unseal The Cute',
+    'Press For Whimsy'
+];
+
+const celebrationSubtitles = [
+    'I made a little game for you...',
+    'Tiny game. Big feelings. 💙',
+    'Warning: this game is 94% cute chaos.',
+    'Ready for some romantic mischief?',
+    'Level unlocked: adorable challenge.'
+];
+
+const gameWarmupMessages = [
+    'Memorize the cards... we start in 3, 2, cute.',
+    'Quick peek time. Pretend this is serious.',
+    'Study mode: activated.',
+    'All right, memory genius, lock these in.'
+];
+
+const gamePlayMessages = [
+    'Find all the matching pairs!',
+    'Match the cuteness before time catches you!',
+    'Flirt with fate. Find the pairs.',
+    'Go go go, chaos memory mode!'
+];
+
+const noTauntBubbles = [
+    'nyoooom 💨',
+    'too slow 😜',
+    'try again, brave soul',
+    'hahaha nope',
+    'mission failed successfully',
+    'caught me? impossible',
+    'plot twist: still no'
+];
+
+const comboReactions = [
+    [],
+    [],
+    ['Cute combo! 💫', 'Double trouble 😎', 'Okayyy smooth.'],
+    ['Triple combo! 🔥', 'Someone call the memory police.', 'You are cooking.'],
+    ['Combo x4! 👑', 'Illegal levels of charm.', 'Main character energy.'],
+    ['Combo chaos! ✨', 'Legend mode unlocked.', 'You broke the cute meter.']
+];
+
+let comboBadgeTimer = null;
+let trailTick = 0;
+let lastNoEscapeAt = 0;
+
+function getWhimsyLayer() {
+    return document.getElementById('whimsy-layer');
+}
+
+function addWhimsyBubble(x, y, text) {
+    const layer = getWhimsyLayer();
+    if (!layer) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'whimsy-bubble';
+    bubble.textContent = text;
+    bubble.style.left = `${x}px`;
+    bubble.style.top = `${y}px`;
+
+    layer.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 1500);
+}
+
+function addEmojiBurst(x, y, count = 8) {
+    if (prefersReducedMotion) return;
+    const layer = getWhimsyLayer();
+    if (!layer) return;
+
+    const icons = ['💙', '✨', '🩵', '💫', '🌟', '😄'];
+    for (let i = 0; i < count; i++) {
+        const token = document.createElement('div');
+        token.className = 'whimsy-emoji';
+        token.textContent = icons[Math.floor(Math.random() * icons.length)];
+        token.style.left = `${x}px`;
+        token.style.top = `${y}px`;
+        token.style.fontSize = `${Math.random() * 9 + 13}px`;
+
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+        const distance = 28 + Math.random() * 48;
+        token.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+        token.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+        token.style.setProperty('--tr', `${(Math.random() - 0.5) * 60}deg`);
+
+        layer.appendChild(token);
+        setTimeout(() => token.remove(), 900);
+    }
+}
+
+function addTrailEmoji(x, y) {
+    if (prefersReducedMotion) return;
+
+    const now = performance.now();
+    if (now - trailTick < 90) return;
+    trailTick = now;
+
+    const layer = getWhimsyLayer();
+    if (!layer) return;
+
+    const trail = document.createElement('div');
+    trail.className = 'whimsy-trail';
+    trail.textContent = randomItem(['✨', '💙', '🩵']);
+    trail.style.left = `${x}px`;
+    trail.style.top = `${y}px`;
+    trail.style.setProperty('--dx', `${(Math.random() - 0.5) * 16}px`);
+
+    layer.appendChild(trail);
+    setTimeout(() => trail.remove(), 700);
+}
+
+function setupWhimsyPointerEffects() {
+    document.addEventListener('pointerdown', e => {
+        addEmojiBurst(e.clientX, e.clientY, 6);
+    });
+
+    document.addEventListener('pointermove', e => {
+        if (e.pointerType !== 'mouse') return;
+        addTrailEmoji(e.clientX, e.clientY);
+    });
+}
+
+function setupMagneticButtons() {
+    if (prefersReducedMotion) return;
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(hover: none)').matches) return;
+
+    const buttons = document.querySelectorAll('.magnetic-btn');
+
+    buttons.forEach(btn => {
+        const reset = () => {
+            btn.style.translate = '0 0';
+            btn.classList.remove('magnetic-active');
+        };
+
+        btn.addEventListener('pointermove', e => {
+            const rect = btn.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            const tx = px * 14;
+            const ty = py * 10;
+
+            btn.style.translate = `${tx.toFixed(1)}px ${ty.toFixed(1)}px`;
+            btn.classList.add('magnetic-active');
+        });
+
+        btn.addEventListener('pointerleave', reset);
+        btn.addEventListener('blur', reset);
+    });
+}
+
+function refreshMicrocopy() {
+    const openText = document.querySelector('.open-btn-text');
+    if (openText) openText.textContent = randomItem(introOpenTexts);
+
+    const celebrateSubtitle = document.querySelector('.celebrate-subtitle');
+    if (celebrateSubtitle) celebrateSubtitle.textContent = randomItem(celebrationSubtitles);
+}
+
+function clearComboBadge() {
+    const badge = document.getElementById('combo-badge');
+    if (!badge) return;
+
+    badge.classList.remove('show');
+    badge.textContent = '';
+    if (comboBadgeTimer) {
+        clearTimeout(comboBadgeTimer);
+        comboBadgeTimer = null;
+    }
+}
+
+function showComboBadge() {
+    if (streak < 2) return;
+
+    const badge = document.getElementById('combo-badge');
+    if (!badge) return;
+
+    const tier = Math.min(streak, comboReactions.length - 1);
+    const reaction = randomItem(comboReactions[tier]);
+    badge.textContent = `Combo x${streak} · ${reaction}`;
+    badge.classList.remove('show');
+    void badge.offsetWidth;
+    badge.classList.add('show');
+
+    if (comboBadgeTimer) clearTimeout(comboBadgeTimer);
+    comboBadgeTimer = setTimeout(() => badge.classList.remove('show'), 1450);
+}
 
 // ========================================
 //  SCENE 1 — INTRO
@@ -57,6 +264,7 @@ function createStars() {
 }
 
 async function startIntro() {
+    refreshMicrocopy();
     createStars();
     await delay(700);
     await typeWriter(introLines[0].el, introLines[0].text, introLines[0].speed);
@@ -138,7 +346,12 @@ function createPetals() {
 function moveNoButton(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
 
+    const now = performance.now();
+    if (now - lastNoEscapeAt < 320) return;
+    lastNoEscapeAt = now;
+
     const btn = document.getElementById('btn-no');
+    const previousRect = btn.getBoundingClientRect();
     const wrapper = document.getElementById('buttons-wrapper');
     const wrapperRect = wrapper.getBoundingClientRect();
     
@@ -204,13 +417,29 @@ function moveNoButton(e) {
     const padV = parseFloat(getComputedStyle(yes).paddingTop);
     const padH = parseFloat(getComputedStyle(yes).paddingLeft);
     yes.style.padding = `${Math.min(padV * 1.1, isMobile ? 28 : 32)}px ${Math.min(padH * 1.1, isMobile ? 55 : 65)}px`;
+
+    const bubbleText = noCount <= noTauntBubbles.length
+        ? noTauntBubbles[noCount - 1]
+        : randomItem(noTauntBubbles);
+    addWhimsyBubble(
+        previousRect.left + previousRect.width / 2,
+        previousRect.top - 8,
+        bubbleText
+    );
+
+    if (noCount % 2 === 0) {
+        addEmojiBurst(previousRect.left + previousRect.width / 2, previousRect.top + previousRect.height / 2, 6);
+    }
 }
 
 function setupNoButton() {
     const btn = document.getElementById('btn-no');
     btn.addEventListener('mouseenter',  moveNoButton);
     btn.addEventListener('touchstart',  moveNoButton, { passive: false });
-    btn.addEventListener('click',       moveNoButton);
+    btn.addEventListener('click', e => {
+        // Keep keyboard activation playful without double-triggering mouse clicks.
+        if (e.detail === 0) moveNoButton(e);
+    });
 }
 
 function addSparkles(x, y) {
@@ -247,6 +476,7 @@ function handleYes() {
 //  SCENE 3 — CELEBRATION
 // ========================================
 function startCelebration() {
+    refreshMicrocopy();
     buildFlower();
     launchConfetti();
     spawnFloatingHearts();
@@ -479,8 +709,9 @@ function resetGame() {
     document.getElementById('game-moves').textContent  = '0';
     document.getElementById('game-pairs').textContent  = '0';
     document.getElementById('game-timer').textContent   = '0:00';
-    document.getElementById('game-message').textContent = 'Memorize the cards...';
+    document.getElementById('game-message').textContent = randomItem(gameWarmupMessages);
     document.getElementById('streak-message').textContent = '';
+    clearComboBadge();
 
     const overlay = document.getElementById('game-win-overlay');
     if (overlay) overlay.classList.remove('visible');
@@ -528,7 +759,7 @@ function previewCards() {
         setTimeout(() => {
             cards.forEach(c => c.classList.remove('flipped'));
             canFlip = true;
-            document.getElementById('game-message').textContent = 'Find all the matching pairs!';
+            document.getElementById('game-message').textContent = randomItem(gamePlayMessages);
         }, 2000);
     }, entryTime);
 }
@@ -583,8 +814,11 @@ function checkMatch() {
             const r2 = c2.getBoundingClientRect();
             addSparkles(r1.left + r1.width / 2, r1.top + r1.height / 2);
             addSparkles(r2.left + r2.width / 2, r2.top + r2.height / 2);
+            addEmojiBurst(r1.left + r1.width / 2, r1.top + r1.height / 2, 6);
+            addEmojiBurst(r2.left + r2.width / 2, r2.top + r2.height / 2, 6);
 
             showStreakMessage();
+            showComboBadge();
 
             flippedCards = [];
             canFlip = true;
@@ -595,6 +829,7 @@ function checkMatch() {
         // ── MISMATCH ──
         streak = 0;
         document.getElementById('streak-message').textContent = '';
+        clearComboBadge();
 
         setTimeout(() => {
             c1.classList.add('mismatch');
@@ -654,6 +889,7 @@ function endGame() {
 function backToCelebration() {
     if (timerInterval) clearInterval(timerInterval);
     document.getElementById('game-win-overlay').classList.remove('visible');
+    clearComboBadge();
     showScene('scene-celebrate');
 }
 
@@ -661,6 +897,9 @@ function backToCelebration() {
 //  INIT
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
+    refreshMicrocopy();
+    setupMagneticButtons();
+    setupWhimsyPointerEffects();
     setupNoButton();
     startIntro();
 });

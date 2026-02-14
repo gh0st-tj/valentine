@@ -20,7 +20,7 @@
                 <p class="intro-line" id="line1"></p>
                 <p class="intro-line" id="line2"></p>
             </div>
-            <button class="open-btn" id="open-btn" onclick="goToQuestion()">
+            <button class="open-btn magnetic-btn" id="open-btn" onclick="goToQuestion()">
                 <span class="open-btn-text">Open</span>
                 <span class="open-btn-heart">💙</span>
             </button>
@@ -35,7 +35,7 @@
             <h1 class="question-title">Will you be my Valentine?</h1>
             <p class="subtitle" id="subtitle">Maya, I have something important to ask you...</p>
             <div class="buttons-wrapper" id="buttons-wrapper">
-                <button class="btn btn-yes" id="btn-yes" onclick="handleYes()">Yes! 💙</button>
+                <button class="btn btn-yes magnetic-btn" id="btn-yes" onclick="handleYes()">Yes! 💙</button>
                 <button class="btn btn-no" id="btn-no">No</button>
             </div>
         </div>
@@ -51,7 +51,7 @@
             </div>
             <h2 class="valentine-message">Happy Valentine's Day, Maya! 💙</h2>
             <p class="celebrate-subtitle">I made a little game for you...</p>
-            <button class="game-btn" id="game-btn" onclick="startGame()">Play a Game! 🎮</button>
+            <button class="game-btn magnetic-btn" id="game-btn" onclick="startGame()">Play a Game! 🎮</button>
         </div>
         <div class="floating-hearts" id="floating-hearts"></div>
     </section>
@@ -61,17 +61,18 @@
         <div class="game-bg"></div>
         <div class="game-container">
             <div class="game-header">
-                <div class="game-title">Memory Match! 💙</div>
+                <div class="game-title" id="game-title">Memory Match! 💙</div>
                 <div class="game-stats">
                     <div class="stat">Moves: <span id="game-moves">0</span></div>
                     <div class="stat">Pairs: <span id="game-pairs">0</span>/8</div>
                     <div class="stat">⏱ <span id="game-timer">0:00</span></div>
                 </div>
+                <div class="combo-badge" id="combo-badge" aria-live="polite"></div>
             </div>
             <div class="game-area" id="game-area"></div>
             <div class="game-message" id="game-message">Find all the matching pairs!</div>
             <div class="streak-message" id="streak-message"></div>
-            <button class="game-back-btn" onclick="backToCelebration()">Back 💙</button>
+            <button class="game-back-btn magnetic-btn" onclick="backToCelebration()">Back 💙</button>
         </div>
         <!-- Win Overlay -->
         <div class="game-win-overlay" id="game-win-overlay">
@@ -87,13 +88,14 @@
                     <span class="win-signature">Forever yours ✨</span>
                 </div>
                 <div class="win-buttons">
-                    <button class="game-btn win-btn" onclick="startGame()">Play Again 🎮</button>
-                    <button class="game-back-btn" onclick="backToCelebration()">Back 💙</button>
+                    <button class="game-btn win-btn magnetic-btn" onclick="startGame()">Play Again 🎮</button>
+                    <button class="game-back-btn magnetic-btn" onclick="backToCelebration()">Back 💙</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <script src="script.js"></script>
+    <div class="whimsy-layer" id="whimsy-layer" aria-hidden="true"></div>
+    <script src="script.js?v=20260214b"></script>
 </body>
 </html>
