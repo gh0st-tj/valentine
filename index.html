@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💙 For Maya</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💙</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ============ SCENE 1: INTRO ============ -->
+    <section id="scene-intro" class="scene active">
+        <div class="stars" id="stars"></div>
+        <div class="intro-content">
+            <div class="intro-text-wrapper">
+                <p class="intro-line" id="line1"></p>
+                <p class="intro-line" id="line2"></p>
+            </div>
+            <button class="open-btn" id="open-btn" onclick="goToQuestion()">
+                <span class="open-btn-text">Open</span>
+                <span class="open-btn-heart">💙</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ============ SCENE 2: THE QUESTION ============ -->
+    <section id="scene-question" class="scene">
+        <div class="petals-bg" id="petals-bg"></div>
+        <div class="question-content">
+            <div class="emoji-display" id="emoji-display">💙</div>
+            <h1 class="question-title">Will you be my Valentine?</h1>
+            <p class="subtitle" id="subtitle">Maya, I have something important to ask you...</p>
+            <div class="buttons-wrapper" id="buttons-wrapper">
+                <button class="btn btn-yes" id="btn-yes" onclick="handleYes()">Yes! 💙</button>
+                <button class="btn btn-no" id="btn-no">No</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SCENE 3: CELEBRATION ============ -->
+    <section id="scene-celebrate" class="scene">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="celebrate-content" id="celebrate-content">
+            <h1 class="yay-text">Yaaay! 💙</h1>
+            <div class="flower-wrapper">
+                <div class="flower" id="flower"></div>
+            </div>
+            <h2 class="valentine-message">Happy Valentine's Day, Maya!</h2>
+            <p class="love-note">
+                You make every single day more beautiful.<br>
+                I'm the luckiest person in the world to have you.<br>
+                Here's to us, today and always. 💙
+            </p>
+            <div class="signature">Forever yours ✨</div>
+        </div>
+        <div class="floating-hearts" id="floating-hearts"></div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
