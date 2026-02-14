@@ -308,17 +308,25 @@ html, body {
     border: 1px solid rgba(255, 255, 255, 0.15);
     font-size: 0.95rem;
     transition: all 0.15s ease;
+    touch-action: none;
 }
 
 .btn-no.escaped {
     position: fixed !important;
     z-index: 100;
-    transition: left 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: left 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                top 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .btn-no:hover {
     background: rgba(255, 255, 255, 0.05);
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .btn-no {
+        padding: 16px 44px;
+        font-size: 1rem;
+    }
 }
 
 /* ========================================
@@ -495,36 +503,29 @@ html, body {
 /* Valentine Message */
 .valentine-message {
     font-family: var(--font-heading);
-    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
     color: var(--white);
-    text-shadow: 0 0 25px rgba(79, 195, 247, 0.35);
+    text-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
     opacity: 0;
-    animation: fadeSlideUp 0.9s ease-out 1.2s forwards;
-    margin-bottom: 18px;
+    animation: fadeSlideUp 0.9s ease-out 1.2s forwards, gentlePulse 3s ease-in-out 2s infinite;
+    margin-top: 15px;
     line-height: 1.3;
-}
-
-.love-note {
-    font-size: clamp(0.92rem, 2.4vw, 1.1rem);
-    color: var(--blue-pale);
-    line-height: 1.9;
-    font-weight: 300;
-    opacity: 0;
-    animation: fadeSlideUp 0.9s ease-out 1.8s forwards;
-    margin-bottom: 22px;
-}
-
-.signature {
-    font-family: var(--font-heading);
-    font-size: clamp(1.2rem, 3.5vw, 1.7rem);
-    color: var(--blue-light);
-    opacity: 0;
-    animation: fadeSlideUp 0.9s ease-out 2.4s forwards;
 }
 
 @keyframes fadeSlideUp {
     from { opacity: 0; transform: translateY(25px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gentlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px) rotate(-5deg); }
+    75% { transform: translateX(8px) rotate(5deg); }
 }
 
 /* Floating Hearts */
@@ -616,5 +617,296 @@ html, body {
 
     .scene {
         transition: none;
+    }
+}
+
+/* ---------- Sparkle Effect ---------- */
+.sparkle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: sparkleOut 0.6s ease-out forwards;
+}
+
+@keyframes sparkleOut {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+}
+
+/* ---------- Interactive Enhancements ---------- */
+.btn-yes {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-yes::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-yes:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.flower-wrapper {
+    cursor: pointer;
+}
+
+.flower:hover .flower-petal {
+    animation: petalWiggle 0.5s ease-in-out;
+}
+
+@keyframes petalWiggle {
+    0%, 100% { transform: rotate(var(--r, 0deg)) scale(1); }
+    50% { transform: rotate(var(--r, 0deg)) scale(1.08); }
+}
+
+/* ---------- Game Button ---------- */
+.game-btn {
+    margin-top: 25px;
+    padding: 14px 38px;
+    border: 2px solid var(--blue-glow);
+    background: rgba(79, 195, 247, 0.15);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeSlideUp 0.9s ease-out 3s forwards;
+}
+
+.game-btn:hover {
+    background: rgba(79, 195, 247, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 0 25px rgba(79, 195, 247, 0.4);
+}
+
+.game-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* ========================================
+   SCENE 4 — MINI GAME
+   ======================================== */
+#scene-game {
+    background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-navy) 50%, var(--blue-dark) 100%);
+}
+
+.game-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(93, 173, 226, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.game-container {
+    position: relative;
+    z-index: 2;
+    width: 90%;
+    max-width: 800px;
+    height: 85vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.game-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    color: var(--blue-glow);
+    text-shadow: 0 0 20px rgba(79, 195, 247, 0.4);
+}
+
+.game-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-weight: 600;
+    color: var(--blue-pale);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(79, 195, 247, 0.3);
+}
+
+.stat span {
+    color: var(--white);
+    font-size: 1.1em;
+}
+
+.game-area {
+    position: relative;
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 2px solid rgba(79, 195, 247, 0.3);
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-flower {
+    position: absolute;
+    cursor: pointer;
+    user-select: none;
+    animation: flowerAppear 0.3s ease-out, flowerFloat 3s ease-in-out infinite;
+    transition: transform 0.1s ease;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+}
+
+.game-flower:hover {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.game-flower:active {
+    transform: scale(0.9);
+}
+
+@keyframes flowerAppear {
+    from {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes flowerFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+    75% {
+        transform: translateY(-5px) rotate(-5deg);
+    }
+}
+
+@keyframes flowerPop {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+.game-message {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--blue-pale);
+    margin: 15px 0;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.6;
+}
+
+.game-back-btn {
+    align-self: center;
+    padding: 12px 35px;
+    border: 2px solid var(--blue-bright);
+    background: rgba(74, 144, 217, 0.2);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.game-back-btn:hover {
+    background: rgba(74, 144, 217, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(74, 144, 217, 0.4);
+}
+
+.game-back-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* Game Mobile Optimizations */
+@media (max-width: 600px) {
+    .game-container {
+        height: 90vh;
+        padding: 15px;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .game-stats {
+        gap: 12px;
+    }
+    
+    .stat {
+        padding: 6px 14px;
+        font-size: 0.95rem;
+    }
+    
+    .game-flower {
+        font-size: 35px !important;
+    }
+}
+
+@media (max-height: 650px) {
+    .game-container {
+        max-height: 500px;
+    }
+    
+    .game-message {
+        min-height: 40px;
+        font-size: 0.95rem;
     }
 }

@@ -49,15 +49,27 @@
             <div class="flower-wrapper">
                 <div class="flower" id="flower"></div>
             </div>
-            <h2 class="valentine-message">Happy Valentine's Day, Maya!</h2>
-            <p class="love-note">
-                You make every single day more beautiful.<br>
-                I'm the luckiest person in the world to have you.<br>
-                Here's to us, today and always. 💙
-            </p>
-            <div class="signature">Forever yours ✨</div>
+            <h2 class="valentine-message">Happy Valentine's Day, Maya! 💙</h2>
+            <button class="game-btn" id="game-btn" onclick="startGame()">Play a Game! 🎮</button>
         </div>
         <div class="floating-hearts" id="floating-hearts"></div>
+    </section>
+
+    <!-- ============ SCENE 4: MINI GAME ============ -->
+    <section id="scene-game" class="scene">
+        <div class="game-bg"></div>
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">Catch the Flowers! 🌸</div>
+                <div class="game-stats">
+                    <div class="stat">Score: <span id="game-score">0</span></div>
+                    <div class="stat">Time: <span id="game-time">30</span>s</div>
+                </div>
+            </div>
+            <div class="game-area" id="game-area"></div>
+            <div class="game-message" id="game-message"></div>
+            <button class="game-back-btn" onclick="backToCelebration()">Back 💙</button>
+        </div>
     </section>
 
     <script src="script.js"></script>

@@ -139,19 +139,52 @@ function moveNoButton(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
 
     const btn = document.getElementById('btn-no');
-    const vw  = window.innerWidth;
-    const vh  = window.innerHeight;
-    const bw  = btn.offsetWidth;
-    const bh  = btn.offsetHeight;
-    const m   = 25;
-
-    // Random position within viewport
-    const nx = Math.random() * (vw - bw - m * 2) + m;
-    const ny = Math.random() * (vh - bh - m * 2) + m;
+    const wrapper = document.getElementById('buttons-wrapper');
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    // Get viewport dimensions
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const bw = btn.offsetWidth;
+    const bh = btn.offsetHeight;
+    
+    // Use larger margin on mobile for better UX
+    const isMobile = vw < 600;
+    const m = isMobile ? 40 : 25;
+    
+    // Calculate safe bounds
+    const maxX = vw - bw - m;
+    const maxY = vh - bh - m;
+    
+    let nx, ny;
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    // Try to find a position that's not too close to the wrapper
+    do {
+        nx = Math.random() * (maxX - m) + m;
+        ny = Math.random() * (maxY - m) + m;
+        attempts++;
+        
+        // On mobile, ensure button doesn't overlap with question area
+        if (isMobile) {
+            const minY = wrapperRect.bottom + 20;
+            const maxSafeY = vh - bh - m;
+            if (ny < minY && maxSafeY > minY) {
+                ny = Math.random() * (maxSafeY - minY) + minY;
+            }
+        }
+    } while (attempts < maxAttempts && 
+             nx > wrapperRect.left - 50 && nx < wrapperRect.right + 50 &&
+             ny > wrapperRect.top - 50 && ny < wrapperRect.bottom + 50);
 
     btn.classList.add('escaped');
     btn.style.left = nx + 'px';
-    btn.style.top  = ny + 'px';
+    btn.style.top = ny + 'px';
+
+    // Add shake animation to button
+    btn.style.animation = 'shake 0.3s ease';
+    setTimeout(() => { btn.style.animation = ''; }, 300);
 
     // Update counter & texts
     noCount++;
@@ -163,14 +196,14 @@ function moveNoButton(e) {
         emojis[Math.min(noCount, emojis.length - 1)];
 
     // Grow the Yes button
-    const yes   = document.getElementById('btn-yes');
-    const cur   = parseFloat(getComputedStyle(yes).fontSize);
-    const newSz = Math.min(cur * 1.14, 58);
+    const yes = document.getElementById('btn-yes');
+    const cur = parseFloat(getComputedStyle(yes).fontSize);
+    const newSz = Math.min(cur * 1.14, isMobile ? 48 : 58);
     yes.style.fontSize = newSz + 'px';
 
     const padV = parseFloat(getComputedStyle(yes).paddingTop);
     const padH = parseFloat(getComputedStyle(yes).paddingLeft);
-    yes.style.padding = `${Math.min(padV * 1.1, 32)}px ${Math.min(padH * 1.1, 65)}px`;
+    yes.style.padding = `${Math.min(padV * 1.1, isMobile ? 28 : 32)}px ${Math.min(padH * 1.1, isMobile ? 55 : 65)}px`;
 }
 
 function setupNoButton() {
@@ -180,9 +213,34 @@ function setupNoButton() {
     btn.addEventListener('click',       moveNoButton);
 }
 
+function addSparkles(x, y) {
+    const colors = ['#4fc3f7', '#7ec8e3', '#aedff7', '#ffd700'];
+    for (let i = 0; i < 8; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = x + 'px';
+        sparkle.style.top = y + 'px';
+        sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        const angle = (Math.PI * 2 * i) / 8;
+        const distance = 30 + Math.random() * 20;
+        sparkle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        sparkle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+        
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 600);
+    }
+}
+
 function handleYes() {
-    showScene('scene-celebrate');
-    startCelebration();
+    const btn = document.getElementById('btn-yes');
+    const rect = btn.getBoundingClientRect();
+    addSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    
+    setTimeout(() => {
+        showScene('scene-celebrate');
+        startCelebration();
+    }, 300);
 }
 
 // ========================================
@@ -194,6 +252,16 @@ function startCelebration() {
     spawnFloatingHearts();
     // Second wave of hearts
     setTimeout(spawnFloatingHearts, 5000);
+    
+    // Make flower interactive
+    setTimeout(() => {
+        const flower = document.getElementById('flower');
+        flower.addEventListener('click', () => {
+            const rect = flower.getBoundingClientRect();
+            addSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            spawnFloatingHearts();
+        });
+    }, 3000);
 }
 
 /* ----- Flower ----- */
@@ -363,6 +431,109 @@ function spawnFloatingHearts() {
         h.style.setProperty('--delay', (Math.random() * 8 + 0.5) + 's');
         box.appendChild(h);
     }
+}
+
+// ========================================
+//  SCENE 4 — MINI GAME
+// ========================================
+let gameScore = 0;
+let gameTime = 30;
+let gameInterval = null;
+let gameSpawnInterval = null;
+let gameActive = false;
+
+function startGame() {
+    showScene('scene-game');
+    gameScore = 0;
+    gameTime = 30;
+    gameActive = true;
+    
+    document.getElementById('game-score').textContent = '0';
+    document.getElementById('game-time').textContent = '30';
+    document.getElementById('game-message').textContent = 'Click the flowers as fast as you can!';
+    document.getElementById('game-area').innerHTML = '';
+    
+    // Timer countdown
+    gameInterval = setInterval(() => {
+        gameTime--;
+        document.getElementById('game-time').textContent = gameTime;
+        
+        if (gameTime <= 0) {
+            endGame();
+        }
+    }, 1000);
+    
+    // Spawn flowers
+    spawnGameFlower();
+    gameSpawnInterval = setInterval(spawnGameFlower, 800);
+}
+
+function spawnGameFlower() {
+    if (!gameActive) return;
+    
+    const area = document.getElementById('game-area');
+    const flower = document.createElement('div');
+    flower.className = 'game-flower';
+    
+    const icons = ['🌸', '🌺', '🌼', '🌻', '🌷', '💐', '🏵️', '🌹'];
+    flower.textContent = icons[Math.floor(Math.random() * icons.length)];
+    
+    const size = Math.random() * 30 + 40;
+    flower.style.fontSize = size + 'px';
+    flower.style.left = Math.random() * 85 + '%';
+    flower.style.top = Math.random() * 85 + '%';
+    
+    const duration = Math.random() * 1.5 + 2;
+    flower.style.animationDuration = duration + 's';
+    
+    flower.addEventListener('click', () => {
+        if (!gameActive) return;
+        
+        gameScore += 10;
+        document.getElementById('game-score').textContent = gameScore;
+        
+        // Sparkle effect
+        const rect = flower.getBoundingClientRect();
+        addSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        
+        // Remove flower
+        flower.style.animation = 'flowerPop 0.3s ease-out';
+        setTimeout(() => flower.remove(), 300);
+    });
+    
+    area.appendChild(flower);
+    
+    // Auto-remove after animation
+    setTimeout(() => {
+        if (flower.parentNode) flower.remove();
+    }, duration * 1000);
+}
+
+function endGame() {
+    gameActive = false;
+    clearInterval(gameInterval);
+    clearInterval(gameSpawnInterval);
+    
+    const msg = document.getElementById('game-message');
+    if (gameScore >= 200) {
+        msg.innerHTML = `🎉 Amazing! You scored ${gameScore}! 🎉<br>You're as quick as my heart beats for you! 💙`;
+    } else if (gameScore >= 100) {
+        msg.innerHTML = `💙 Great job! You scored ${gameScore}! 💙<br>You're pretty awesome!`;
+    } else {
+        msg.innerHTML = `😊 You scored ${gameScore}!<br>Still love you though! 💙`;
+    }
+    
+    // Clear remaining flowers
+    setTimeout(() => {
+        document.getElementById('game-area').innerHTML = '';
+    }, 2000);
+}
+
+function backToCelebration() {
+    gameActive = false;
+    if (gameInterval) clearInterval(gameInterval);
+    if (gameSpawnInterval) clearInterval(gameSpawnInterval);
+    showScene('scene-celebrate');
 }
 
 // ========================================
